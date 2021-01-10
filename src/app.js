@@ -1,17 +1,35 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
 const unless = require("express-unless");
-const jwt = require("jsonwebtoken");
 const app = express();
 const db = require("./db");
+const cors = require("cors");
 
 app.use(express.json());
 const registroRouter = require("./api/registro");
-
+const loginRouter = require("./api/login");
+const listadoRouter = require("./api/listado");
+const auth = require("./middleware");
+app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
+app.use(cors());
 //Autenticacion
 
+auth.unless = unless;
 //Paso 1 registro
+app.use(
+  auth.unless({
+    path: [
+      { url: "/login", methods: ["POST", "GET"] },
+      { url: "/registro", methods: ["POST", "GET"] },
+      { url: "/", methods: ["POST", "GET"] },
+    ],
+  })
+);
+
+app.use("/listado", listadoRouter);
 app.use("/registro", registroRouter);
+app.use("/login", loginRouter);
+
 /*
 app.post("/registro", (req, res) => {
   try {
